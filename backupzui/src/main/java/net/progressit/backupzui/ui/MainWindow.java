@@ -16,13 +16,9 @@ import net.progressit.backupzui.logic.BackupService;
 public class MainWindow extends JFrame{
 	private static final long serialVersionUID = 1L;
 
-	private BackupHistoryService dataLogService;
-	private BackupService backupService;
 	private EventBus bus;
 	@Inject
 	public MainWindow(BackupHistoryService dataLogService, BackupService backupService, EventBus bus) {
-		this.dataLogService = dataLogService;
-		this.backupService = backupService;
 		this.bus = bus;
 		this.logPanel = new LogDisplayPanel(dataLogService, backupService, bus);
 	}

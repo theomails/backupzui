@@ -36,15 +36,13 @@ public class RunBackupPanel extends JPanel {
 		private JButton btnBackupDestination = new JButton("Browse...");
 		
 		private final JPanel pnlButtons = new JPanel(new MigLayout("insets 0","[grow][]","[]"));
-		private final JButton btnNewBackup = new JButton("Start Backup");
+		private final JButton btnStartStopBackup = new JButton("Start Backup");
 		
 		private final JLabel lblProgressFolder = new JLabel();
 		private final JLabel lblProgressFile = new JLabel();
 		private final JLabel lblProgressSummary = new JLabel();
 		private final JProgressBar pbProgress = new JProgressBar();
 		
-		private final JPanel pnlButtons2 = new JPanel(new MigLayout("insets 0","[grow][]","[]"));
-		private final JButton btnStopBackup = new JButton("Stop");
 		
 		private void init() {
 			pnlStart.add(new JLabel("Folder To Backup"), "");
@@ -61,11 +59,9 @@ public class RunBackupPanel extends JPanel {
 			pnlProgress.add(lblProgressFile, "spanx 2, grow, wrap");
 			pnlProgress.add(new JLabel("Progress:"), "");
 			pnlProgress.add(lblProgressSummary, "spanx 2, grow, wrap");
-			pnlProgress.add(pbProgress, "spanx 3, grow, wrap");
-			pnlProgress.add(pnlButtons2, "spanx 3, grow, wrap");
+			pnlProgress.add(pbProgress, "spanx 3, grow");
 			
-			pnlButtons.add(btnNewBackup, "skip 1");
-			pnlButtons2.add(btnStopBackup, "skip 1");
+			pnlButtons.add(btnStartStopBackup, "skip 1");
 			
 			//setEnabledForPanel(pnlStart, false);
 			//pbProgress.setIndeterminate(true);			
@@ -75,7 +71,7 @@ public class RunBackupPanel extends JPanel {
 	
 	private File fromFolder = null;
 	private File toFolder = null;
-	
+	private boolean running = false;
 	
 	private BackupService backupService;
 	public RunBackupPanel(BackupService backupService, EventBus bus) {
@@ -111,43 +107,81 @@ public class RunBackupPanel extends JPanel {
 			}
 		} );
 		
-		comps.btnNewBackup.addActionListener( (e)->{
-			Path source = Paths.get(comps.txtFolderToBackup.getText());
-			Path destination = Paths.get(comps.txtBackupDestination.getText());
-			try {
-				SwingUtilities.invokeLater( ()->{ comps.pbProgress.setIndeterminate(true); } );
-				backupService.startNewBackup(source, destination, null, false);
-				SwingUtilities.invokeLater( ()->{ comps.pbProgress.setIndeterminate(false); } );
-			} catch (IOException e1) {
-				throw new RuntimeException(e1);
+		comps.btnStartStopBackup.addActionListener( (e)->{
+			if(!running) {
+				Path source = Paths.get(comps.txtFolderToBackup.getText());
+				Path destination = Paths.get(comps.txtBackupDestination.getText());
+				startNewBackup(source, destination);
+				running = true;
+				comps.btnStartStopBackup.setText("Stop Backup");
+			}else {
+				backupService.stop();
+				comps.pbProgress.setIndeterminate(false);
+				running = false;
+				comps.btnStartStopBackup.setText("Start Backup");
+				//Dont clear in case of stop in middle, so that user can know progress.
+				//comps.lblProgressFolder.setText( "" );
+				//comps.lblProgressFile.setText( "" );
 			}
 		} );
 	}
 	
 	//KINDA PRIVATE
+	private void startNewBackup(Path source, Path destination) {
+		Runnable r = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					SwingUtilities.invokeLater( ()->{ comps.pbProgress.setIndeterminate(true); } );
+					backupService.startNewBackup(source, destination, null, false);
+					running = false;
+					SwingUtilities.invokeLater( ()->{ 
+						comps.lblProgressFolder.setText( "" );
+						comps.lblProgressFile.setText( "" );
+						comps.pbProgress.setIndeterminate(false); 
+						comps.btnStartStopBackup.setText("Start Backup");
+					} );
+				} catch (IOException e1) {
+					throw new RuntimeException(e1);
+				}
+			}
+		};
+		
+		new Thread(r).start();
+	}
 	@Subscribe
 	private void handle(EventFolderProcessed event) {
 		SwingUtilities.invokeLater( ()->{
 			if(event.isStart()) {
-				comps.lblProgressFolder.setText( html(event.toString()) );
-			}else {
-				comps.lblProgressFolder.setText( "" );
-				comps.lblProgressFile.setText( "" );
+				comps.lblProgressFolder.setText( html(folderMsg(event)) );
 			}
 		} );
 	}
 	@Subscribe
 	private void handle(EventFileProcessed event) {
 		SwingUtilities.invokeLater( ()->{
-			comps.lblProgressFile.setText( html(event.toString()) );
+			comps.lblProgressFile.setText( html(fileMsg(event)) );
 		} );
 	}
 	
 	//PRIVATE
+	private String folderMsg(EventFolderProcessed event) {
+		String res = "";
+		
+		res += " [" + event.getFlavor() + " ~ ";
+		res +=  event.getOriginalRoot().relativize( event.getFlavorRoot() ) + "] :: "; //Flavor path from root
+		res += event.getRelFolder().toString(); //Rel path from flavor path
+		
+		return res;
+	}
+	private String fileMsg(EventFileProcessed event) {
+		return event.getRelFile().getFileName().toString();
+	}
 	
 	private String html(String string) {
 		return "<html>"+string+"</html>";
 	}
+	
 	
 	private void setEnabledForPanel(JPanel panel, boolean enabled) {
 		for(Component c:panel.getComponents()) {

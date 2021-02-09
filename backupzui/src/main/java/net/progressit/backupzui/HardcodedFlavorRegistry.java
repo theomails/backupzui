@@ -76,20 +76,44 @@ public class HardcodedFlavorRegistry implements FlavorRegistry {
 		
 		FlavorSettings vueFlavor = FlavorSettings.builder() //
 										.flavorName("vue-folder")
+										.lookForFlavorsInside(true)
 										.identifyByParentFolderPatterns( StringList.strings("VUE", "vue") ) //
-										.blacklistFolderPatterns( StringList.strings("node_modules","\\.git") ) //
+										.blacklistFolderPatterns( StringList.strings("node_modules","\\.git","dist") ) //
 										.build();
+		
+//		FlavorSettings eclipseWs = FlavorSettings.builder() //
+//				.flavorName("eclipse-ws")
+//				.lookForFlavorsInside(true)
+//				.identifyByChildFolderPatterns( StringList.strings("\\.metadata") ) //
+//				.blacklistFolderPatterns( StringList.strings("\\.metadata") ) //
+//				.build();
 		
 		FlavorSettings eclipseProject = FlavorSettings.builder() //
 				.flavorName("eclipse-project")
-				.identifyBySiblingFolderPatterns( StringList.strings("\\.metadata") ) //
-				.blacklistFolderPatterns( StringList.strings("target") ) //
+				.lookForFlavorsInside(true)
+				.identifyBySiblingFolderPatterns( StringList.strings("\\.metadata") ) //weak
+				.blacklistFolderPatterns( StringList.strings("\\.metadata", "target") ) //
 				.build();
 		
 		FlavorSettings zideProject = FlavorSettings.builder() //
 				.flavorName("zide-project")
+				.lookForFlavorsInside(true)
 				.identifyByChildFolderPatterns( StringList.strings("\\.zide_resources") ) //
 				.blacklistFolderPatterns( StringList.strings("\\.zide_resources", "build") ) //
+				.build();
+		
+		FlavorSettings tomcat = FlavorSettings.builder() //
+				.flavorName("tomcat-dir")
+				.lookForFlavorsInside(true)
+				.identifyBySelfFolderPatterns( StringList.strings("apache-tomcat.*") ) //
+				.blacklistFolderPatterns( StringList.strings(".*") ) //
+				.build();
+		
+		FlavorSettings userDir = FlavorSettings.builder() //
+				.flavorName("user-dir")
+				.lookForFlavorsInside(true)
+				.identifyByParentFolderPatterns( StringList.strings("Users") ) //
+				.blacklistFolderPatterns( StringList.strings("(\\.).*") ) //
 				.build();
 		
 		FlavorSettings progFilesFlavor = FlavorSettings.builder() //
@@ -115,8 +139,8 @@ public class HardcodedFlavorRegistry implements FlavorRegistry {
 		
 		init( Arrays.asList( new FlavorSettings[] {fakePc, m2, git, hg, 
 				appData, programData, recovery, 
-				zideProject, eclipseProject, vueFlavor, 
-				progFilesFlavor, windowsFlavor, 
+				zideProject, eclipseProject, vueFlavor, tomcat,
+				userDir, progFilesFlavor, windowsFlavor, 
 				genericFlavor} ) );
 	}
 	

@@ -11,6 +11,7 @@ public interface BackupService {
 	@Data
 	@AllArgsConstructor
 	public static class BackupRunSettings{
+		private final Path originalRoot;
 		private final Path sourceBase;
 		private final Path destinationBase;
 		private FlavorSettings flavor;
@@ -30,6 +31,9 @@ public interface BackupService {
 	}
 	@Data
 	public static class EventFolderProcessed{
+		private final Path originalRoot;
+		private final Path flavorRoot;
+		private final String flavor;
 		private final boolean skipped;
 		private final boolean start;
 		private final Path fromFolder;
@@ -45,9 +49,15 @@ public interface BackupService {
 	}
 	
 	void startNewBackup(Path source, Path destination, String flavorOpt, boolean isResync) throws IOException;
+	
+	void startNewBackupInner(Path originalRoot, Path dir, Path matchingDest, String newFlavor, boolean resync) throws IOException;
 
 	void post(Object event);
 
 	void copyFile(Path file, Path matchingDestFile, Path relFile);
+
+	boolean isStopped();
+	
+	void stop();
 
 }

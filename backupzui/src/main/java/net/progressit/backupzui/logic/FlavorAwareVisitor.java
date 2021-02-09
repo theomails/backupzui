@@ -24,6 +24,8 @@ public class FlavorAwareVisitor implements FileVisitor<Path> {
 	
 	@Override
 	public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+		if(backupService.isStopped()) return FileVisitResult.SKIP_SUBTREE;
+		
 		if(dir.getParent()!=null && dir.getParent().equals(settings.getSourceBase())) {
 			System.out.println("preVisitDirectory " + dir);
 		}
@@ -38,19 +40,22 @@ public class FlavorAwareVisitor implements FileVisitor<Path> {
 		Path relPath = settings.getSourceBase().relativize(dir);
 		Path matchingDest = settings.getDestinationBase().resolve(relPath);
 		
-		String newFlavor = flavorService.detectFlavor(dir, settings.getFlavor());
-		if(newFlavor!=null && !"generic".equals(newFlavor)) {
-			System.out.println("Found inner flavor " + newFlavor + ". Proceeding to a new backup...");
-			backupService.startNewBackup(dir, matchingDest, newFlavor, settings.isResync());
-			return FileVisitResult.SKIP_SUBTREE;
+		if(!dir.equals(settings.getSourceBase())) { //Don't check flavour again for root folder during the walk.
+			String newFlavor = flavorService.detectFlavor(dir, settings.getFlavor());
+			if(newFlavor!=null && !"generic".equals(newFlavor)) {
+				System.out.println("Found inner flavor " + newFlavor + ". Proceeding to a new backup...");
+				backupService.startNewBackupInner(settings.getOriginalRoot(), dir, matchingDest, newFlavor, settings.isResync());
+				return FileVisitResult.SKIP_SUBTREE;
+			}
 		}
 		
-		backupService.post( new BackupService.EventFolderProcessed(false,true, dir, matchingDest, relPath) );
+		backupService.post( new BackupService.EventFolderProcessed(settings.getOriginalRoot(), settings.getSourceBase(), settings.getFlavor().flavorName, false, true, dir, matchingDest, relPath) );
 		return FileVisitResult.CONTINUE;
 	}
 
 	@Override
 	public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+		if(backupService.isStopped()) return FileVisitResult.SKIP_SUBTREE;
 		//System.out.println("visitFile " + file);
 		
 		//Optimize.. If blacklist *, skip siblings
@@ -84,7 +89,7 @@ public class FlavorAwareVisitor implements FileVisitor<Path> {
 	public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
 		//System.out.println("postVisitDirectory " + dir);
 		
-		backupService.post( new BackupService.EventFolderProcessed(false,true, dir, null, null) );
+		backupService.post( new BackupService.EventFolderProcessed(settings.getOriginalRoot(), settings.getSourceBase(), settings.getFlavor().flavorName, false, false, dir, null, null) );
 		return FileVisitResult.CONTINUE;
 	}
 };

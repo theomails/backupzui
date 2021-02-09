@@ -27,9 +27,19 @@ public class RealBackupService implements BackupService {
 	
 	
 	private long backupId = 0L;
+	private volatile boolean stopped = false; //Gets read from Backup thread. Gets set from UI events thread.
+	public boolean isStopped() {
+		return stopped;
+	}
+	public void stop() {
+		stopped = true;
+	}
 	
 	@Override
 	public void startNewBackup(Path source, Path destination, String flavorOpt, boolean isResync) throws IOException {
+		startNewBackupInner(source, source, destination, flavorOpt, isResync);
+	}
+	public void startNewBackupInner(Path originalRoot, Path source, Path destination, String flavorOpt, boolean isResync) throws IOException {
 		System.out.println("startNewBackup(source, destination, flavorOpt, isResync)");
 		System.out.println(Arrays.asList(source, destination, flavorOpt, isResync));
 		
@@ -43,27 +53,21 @@ public class RealBackupService implements BackupService {
 		settings = flavorRegistry.getSettings(flavorOpt);
 		if(settings==null) throw new RuntimeException("Settings is null for " + source);
 		
-		final FlavorSettings savedSettings = settings;
-		Runnable r = new Runnable() {
-			@Override
-			public void run() {
-				bus.post(new EventBackupStarted(backupId, isResync, source, destination));
-				
-				BackupRunSettings settings = new BackupRunSettings(source, destination, savedSettings, isResync);
-				//Even the sub flavors crawling will be done Sync in same thread, and will be done inside these calls.
-				FileVisitor<Path> myVisitor = new FlavorAwareVisitor(RealBackupService.this, flavorService, settings);
-				try {
-					Files.walkFileTree(source, myVisitor);
-				} catch (IOException e) {
-					System.err.println(e.toString());
-					e.printStackTrace();
-				}
-				
-				bus.post(new EventBackupCompleted(backupId));
-			}
-		};
+		bus.post(new EventBackupStarted(backupId, isResync, source, destination));
 		
-		new Thread(r).start();
+		BackupRunSettings bkpSettings = new BackupRunSettings(originalRoot, source, destination, settings, isResync);
+		//Even the sub flavors crawling will be done Sync in same thread, and will be done inside these calls.
+		FileVisitor<Path> myVisitor = new FlavorAwareVisitor(RealBackupService.this, flavorService, bkpSettings);
+		try {
+			Files.walkFileTree(source, myVisitor);
+		} catch (IOException e) {
+			System.err.println(e.toString());
+			e.printStackTrace();
+		}
+		
+		bus.post(new EventBackupCompleted(backupId));
+		
+
 	}
 
 	@Override
