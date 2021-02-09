@@ -1,0 +1,146 @@
+package net.progressit.backupzui;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.google.inject.Inject;
+
+import net.progressit.backupzui.api.FlavorSettings;
+import net.progressit.backupzui.util.StringList;
+
+public class HardcodedFlavorRegistry implements FlavorRegistry {
+	
+	private final List<FlavorSettings> flavorExecs = new ArrayList<>();
+	private final Map<String, FlavorSettings> flavorExecMap = new LinkedHashMap<>();
+	
+	@Inject
+	public HardcodedFlavorRegistry() {
+		load();
+	}
+	
+	private void load() {
+		
+		//Misses hidden files .. need to fix.
+		
+		//Maven
+		//Intellij
+		//Android
+		//Eclipse ws
+		//Tomcat
+		//pagefile.sys, hiberfile.sys
+		
+		FlavorSettings fakePc = FlavorSettings.builder() //
+				.flavorName("fake-pc")
+				.identifyBySelfFolderPatterns( StringList.strings("FAKEPC") ) //
+				.blacklistFolderPatterns( StringList.strings(".*") ) //
+				.build();
+		
+		FlavorSettings git = FlavorSettings.builder() //
+				.flavorName("git")
+				.identifyBySelfFolderPatterns( StringList.strings("\\.git") ) //
+				.blacklistFolderPatterns( StringList.strings(".*") ) //
+				.build();
+		
+		FlavorSettings m2 = FlavorSettings.builder() //
+				.flavorName("maven-m2")
+				.identifyBySelfFolderPatterns( StringList.strings("\\.m2") ) //
+				.blacklistFolderPatterns( StringList.strings(".*") ) //
+				.build();
+		
+		FlavorSettings hg = FlavorSettings.builder() //
+				.flavorName("hg")
+				.identifyBySelfFolderPatterns( StringList.strings("\\.hg") ) //
+				.blacklistFolderPatterns( StringList.strings(".*") ) //
+				.build();
+		
+		FlavorSettings appData = FlavorSettings.builder() //
+				.flavorName("app-data")
+				.identifyByParentFolderPatterns( StringList.strings("AppData") ) //
+				.blacklistFolderPatterns( StringList.strings("Local","LocalLow","Roaming") ) // 
+				.build();
+		
+		FlavorSettings programData = FlavorSettings.builder() //
+				.flavorName("program-data")
+				.identifyByParentFolderPatterns( StringList.strings("ProgramData") ) //
+				.blacklistFolderPatterns( StringList.strings(".*") ) // 
+				.build();
+		
+		FlavorSettings recovery = FlavorSettings.builder() //
+				.flavorName("recovery")
+				.identifyByParentFolderPatterns( StringList.strings("Recovery") ) //
+				.blacklistFolderPatterns( StringList.strings(".*") ) // 
+				.build();
+		
+		FlavorSettings vueFlavor = FlavorSettings.builder() //
+										.flavorName("vue-folder")
+										.identifyByParentFolderPatterns( StringList.strings("VUE", "vue") ) //
+										.blacklistFolderPatterns( StringList.strings("node_modules","\\.git") ) //
+										.build();
+		
+		FlavorSettings eclipseProject = FlavorSettings.builder() //
+				.flavorName("eclipse-project")
+				.identifyBySiblingFolderPatterns( StringList.strings("\\.metadata") ) //
+				.blacklistFolderPatterns( StringList.strings("target") ) //
+				.build();
+		
+		FlavorSettings zideProject = FlavorSettings.builder() //
+				.flavorName("zide-project")
+				.identifyByChildFolderPatterns( StringList.strings("\\.zide_resources") ) //
+				.blacklistFolderPatterns( StringList.strings("\\.zide_resources", "build") ) //
+				.build();
+		
+		FlavorSettings progFilesFlavor = FlavorSettings.builder() //
+				.flavorName("program-files")
+				.identifyBySelfFolderPatterns( StringList.strings("Program Files","Program Files \\(x86\\)") ) //
+				.blacklistFolderPatterns( StringList.strings(".*") ) //
+				.blacklistFilePatterns( StringList.strings(".*") ) //
+				.build();
+		
+		FlavorSettings windowsFlavor = FlavorSettings.builder() //
+				.flavorName("windows")
+				.identifyBySelfFolderPatterns( StringList.strings("Windows", "Windows.old") ) //
+				.blacklistFolderPatterns( StringList.strings(".*") ) //
+				.blacklistFilePatterns( StringList.strings(".*") ) //
+				.build();
+		
+		FlavorSettings genericFlavor = FlavorSettings.builder() //
+				.flavorName("generic")
+				.lookForFlavorsInside(true)
+				.identifyBySelfFolderPatterns( StringList.strings(".*") ) //
+				.blacklistFolderPatterns( StringList.strings("\\$.*") ) //
+				.build();
+		
+		init( Arrays.asList( new FlavorSettings[] {fakePc, m2, git, hg, 
+				appData, programData, recovery, 
+				zideProject, eclipseProject, vueFlavor, 
+				progFilesFlavor, windowsFlavor, 
+				genericFlavor} ) );
+	}
+	
+	private void init(List<FlavorSettings> settings) {
+		flavorExecs.clear();
+		flavorExecs.addAll(settings);
+		for(FlavorSettings f:flavorExecs) {
+			flavorExecMap.put(f.getFlavorName(), f);
+		}
+	}
+	
+	@Override
+	public List<FlavorSettings> getOrderedFlavorExecs() {
+		return flavorExecs;
+	}
+	@Override
+	public FlavorSettings getSettings(String flavorName) {
+		FlavorSettings settings =  flavorExecMap.get(flavorName);
+		return settings;
+	}
+	@Override
+	public List<String> getFlavorNames(){
+		List<String> names = new ArrayList<>();
+		names.addAll( flavorExecMap.keySet() );
+		return names;
+	}
+}

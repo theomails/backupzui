@@ -1,0 +1,255 @@
+package net.progressit.backupzui.logic;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.google.inject.Inject;
+
+import net.progressit.backupzui.FlavorRegistry;
+import net.progressit.backupzui.api.FlavorSettings;
+
+public class RealFlavorService implements FlavorService {
+	private static final List<String> EMPTY_LIST = new ArrayList<>();
+	
+	private FlavorRegistry flavorRegistry;
+	@Inject
+	public RealFlavorService(FlavorRegistry flavorRegistry) {
+		this.flavorRegistry = flavorRegistry;
+	}
+	
+	@Override
+	public String detectFlavor(Path folder, FlavorSettings currentFlavorSettingsOpt) {
+		if(currentFlavorSettingsOpt!=null && !currentFlavorSettingsOpt.lookForFlavorsInside) {
+			//Not allowed to look for flavors inside.
+			return null;
+		}
+		
+		List<String> names = flavorRegistry.getFlavorNames();
+		for(String name:names) {
+			boolean allowed = allowsFlavor(name, currentFlavorSettingsOpt);
+			//System.out.println("#");
+			if(allowed) {
+				try {
+					FlavorSettings newFlavorSettings = flavorRegistry.getSettings(name);
+					boolean flavorMatched = checkFlavorMatches(folder, newFlavorSettings);
+					if(flavorMatched) {
+						System.out.println("Found flavor " + name);
+						return name;
+					}
+				}catch(IOException e) {
+					System.err.println(e.toString());
+					e.printStackTrace();
+				}
+			}
+		}
+		return null; //Should not get here, as there should be a generic flavor which matches any folder.
+	}
+	private boolean checkFlavorMatches(Path folder, FlavorSettings newFlavorSettings) throws IOException {
+		//By self pattern
+		if(newFlavorSettings.identifyBySelfFolderPatterns!=null && newFlavorSettings.identifyBySelfFolderPatterns.size()>0) {
+			for(String selfFolderPattern:newFlavorSettings.identifyBySelfFolderPatterns) {
+				Pattern pattern = getPattern(selfFolderPattern);
+				boolean matches = matches(selfFolderPattern, pattern, folder);
+				if(matches) return true;
+			}
+		}
+		
+		//By parent pattern
+		if(newFlavorSettings.identifyByParentFolderPatterns!=null && newFlavorSettings.identifyByParentFolderPatterns.size()>0) {
+			Path parent = folder.getParent();
+			if(parent!=null) { //Parent will be null for Root/drives
+				for(String parentFolderPattern:newFlavorSettings.identifyByParentFolderPatterns) {
+					Pattern pattern = getPattern(parentFolderPattern);
+					boolean matches = matches(parentFolderPattern, pattern, parent);
+					if(matches) return true;
+				}
+			}else {
+				boolean starAllowed = newFlavorSettings.identifyByParentFolderPatterns.contains("glob:*");
+				if(starAllowed) return true;
+			}
+		}
+		//By child patterns
+		if(newFlavorSettings.identifyByChildFolderPatterns!=null && newFlavorSettings.identifyByChildFolderPatterns.size()>0) {
+			List<Path> childFolders = getImmediateFilesOrFolers(folder, false);
+			for(String childFolderPattern:newFlavorSettings.identifyByChildFolderPatterns) {
+				Pattern pattern = getPattern(childFolderPattern);
+				
+				for(Path childFolder:childFolders) {
+					boolean matches = matches(childFolderPattern, pattern, childFolder);
+					if(matches) return true;
+				}
+			}
+		}
+		//By sibling patterns
+		if(newFlavorSettings.identifyBySiblingFolderPatterns!=null && newFlavorSettings.identifyBySiblingFolderPatterns.size()>0) {
+			if(folder.getParent()!=null) {
+				List<Path> siblingFolders = getImmediateFilesOrFolers(folder.getParent(), false);
+				for(String siblingFolderPattern:newFlavorSettings.identifyBySiblingFolderPatterns) {
+					Pattern pattern = getPattern(siblingFolderPattern);
+					
+					for(Path siblingFolder:siblingFolders) {
+						boolean matches = matches(siblingFolderPattern, pattern, siblingFolder);
+						if(matches) return true;
+					}
+				}
+			} //Else?
+		}		
+		//By child FILE patterns
+		if(newFlavorSettings.identifyByChildFilePatterns!=null && newFlavorSettings.identifyByChildFilePatterns.size()>0) {
+			List<Path> childFiles = getImmediateFilesOrFolers(folder, true);
+			for(String childFilePattern:newFlavorSettings.identifyByChildFilePatterns) {
+				Pattern pattern = getPattern(childFilePattern);
+				
+				for(Path childFile:childFiles) {
+					boolean matches = matches(childFilePattern, pattern, childFile);
+					if(matches) return true;
+				}
+			}
+		}
+		//By sibling FILE patterns
+		if(newFlavorSettings.identifyBySiblingFilePatterns!=null && newFlavorSettings.identifyBySiblingFilePatterns.size()>0) {
+			if(folder.getParent()!=null) {
+				List<Path> siblingFiles = getImmediateFilesOrFolers(folder.getParent(), true);
+				for(String siblingFilePattern:newFlavorSettings.identifyBySiblingFilePatterns) {
+					Pattern pattern = getPattern(siblingFilePattern);
+					
+					for(Path siblingFile:siblingFiles) {
+						boolean matches = matches(siblingFilePattern, pattern, siblingFile);
+						if(matches) return true;
+					}
+				}
+			}//Else?
+		}		
+		
+		return false;
+	}
+	
+	private boolean allowsFlavor(String flavor, FlavorSettings currentFlavorSettingsOpt) {
+		if(currentFlavorSettingsOpt==null) {
+			//Don't have any current flavor settiongs, So, allowed to search for flavors.
+			return true;
+		}
+		
+		if(currentFlavorSettingsOpt.lookForFlavorsInside==true) {
+			//At least some are allowed
+			//Check blacklist first
+			if(currentFlavorSettingsOpt.blacklistInnerFlavors==null || currentFlavorSettingsOpt.blacklistInnerFlavors.size()==0) {
+				//All allowed
+			}else {
+				boolean blocked = currentFlavorSettingsOpt.blacklistInnerFlavors.contains(flavor.trim().toLowerCase());
+				if(blocked) {
+					return false;
+				}
+			}
+			//Fall through non-blacklisted
+			
+			if(currentFlavorSettingsOpt.whitelistInnerFlavors==null || currentFlavorSettingsOpt.whitelistInnerFlavors.size()==0) {
+				//Even the lack of white-list will be considered as all allowed. This is to avoid inconvenience of having * for the common case.
+			}else {
+				boolean allowed = currentFlavorSettingsOpt.whitelistInnerFlavors.contains(flavor.trim().toLowerCase());
+				if(!allowed) {
+					return false;
+				}
+			}
+			//Fall through exists in white-list, or white-list is empty.
+		}else {
+			return false;
+		}
+		
+		return true;
+	}
+	
+	private List<Path> getImmediateFilesOrFolers(Path startAt, boolean files) throws IOException{
+	    try (Stream<Path> stream = Files.walk(startAt, 1)) {
+	    	
+	        return stream
+	          .filter(file -> files ? !Files.isDirectory(file) : Files.isDirectory(file) )
+	          .collect(Collectors.toList());
+	    }
+	}
+
+	@Override
+	public boolean isFolderAllowed(FlavorSettings flavorSettings, Path dir) {
+		//System.out.println("isFolderAllowed " + dir);
+		if(flavorSettings.getBlacklistFolderPatterns()!=null && flavorSettings.getBlacklistFolderPatterns().size()>0) {
+			List<String> folderBlacklists = flavorSettings.getBlacklistFolderPatterns();
+			folderBlacklists = folderBlacklists==null?EMPTY_LIST:folderBlacklists;
+			for(String folderBlacklist:folderBlacklists) {
+				Pattern pattern = getPattern(folderBlacklist);
+				if(matches(folderBlacklist, pattern, dir)) {
+					return false;
+				}
+			}
+		}
+		//Fall through not blacklisted
+		
+		if(flavorSettings.getWhitelistFolderPatterns()==null || flavorSettings.getWhitelistFolderPatterns().size()==0) {
+			return true;
+		}else {
+			List<String> folderWhitelists = flavorSettings.getWhitelistFolderPatterns();
+			folderWhitelists = folderWhitelists==null?EMPTY_LIST:folderWhitelists;
+			for(String folderWhitelist:folderWhitelists) {
+				Pattern pattern = getPattern(folderWhitelist);
+				if(matches(folderWhitelist, pattern, dir)) {
+					return true;
+				}
+			}
+			
+			//Fall through not allowed.
+			return false;
+		}
+	}
+	@Override
+	public boolean isFileAllowed(FlavorSettings flavorSettings, Path file) {
+		//System.out.println("isFileAllowed " + file);
+		if(flavorSettings.getBlacklistFilePatterns()!=null && flavorSettings.getBlacklistFilePatterns().size()>0) {
+			List<String> fileBlacklists = flavorSettings.getBlacklistFilePatterns();
+			fileBlacklists = fileBlacklists==null?EMPTY_LIST:fileBlacklists;
+			for(String fileBlacklist:fileBlacklists) {
+				Pattern pattern = getPattern(fileBlacklist);
+				if(matches(fileBlacklist, pattern, file)) {
+					return false;
+				}
+			}
+		}
+		//Fall through not blacklisted
+		
+		if(flavorSettings.getWhitelistFilePatterns()==null || flavorSettings.getWhitelistFilePatterns().size()==0) {
+			return true;
+		}else {
+			List<String> fileWhitelists = flavorSettings.getWhitelistFilePatterns();
+			fileWhitelists = fileWhitelists==null?EMPTY_LIST:fileWhitelists;
+			for(String fileWhitelist:fileWhitelists) {
+				Pattern pattern = getPattern(fileWhitelist);
+				if(matches(fileWhitelist, pattern, file)) {
+					return true;
+				}
+			}
+			
+			//Fall through not allowed.
+			return false;
+		}
+	}
+	
+	private boolean matches(String patternStr, Pattern pattern, Path path) {
+		
+		Path finalPath = path.getFileName(); //Only consider current one, and not the whole path.
+		finalPath = finalPath==null?path:finalPath;
+		//System.out.println("matches " + finalPath);
+		boolean match = pattern.matcher(finalPath.toString()).matches();
+		if(match) System.out.println( patternStr + "(" + finalPath + "): Matched" );
+		else {
+			if( finalPath.toString().endsWith(patternStr) ) System.out.println("OOPS");
+		}
+		return match;
+	}
+	private Pattern getPattern(String patternStr) {
+		return Pattern.compile(patternStr);
+	}
+}
