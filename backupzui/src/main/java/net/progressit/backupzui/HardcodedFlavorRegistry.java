@@ -58,28 +58,30 @@ public class HardcodedFlavorRegistry implements FlavorRegistry {
 		
 		FlavorSettings appData = FlavorSettings.builder() //
 				.flavorName("app-data")
-				.identifyByParentFolderPatterns( StringList.strings("AppData") ) //
+				.identifyBySelfFolderPatterns( StringList.strings("AppData") ) //
 				.blacklistFolderPatterns( StringList.strings("Local","LocalLow","Roaming") ) // 
 				.build();
 		
 		FlavorSettings programData = FlavorSettings.builder() //
 				.flavorName("program-data")
-				.identifyByParentFolderPatterns( StringList.strings("ProgramData") ) //
+				.identifyBySelfFolderPatterns( StringList.strings("ProgramData") ) //
 				.blacklistFolderPatterns( StringList.strings(".*") ) // 
+				.blacklistFilePatterns( StringList.strings(".*") ) //
 				.build();
 		
 		FlavorSettings recovery = FlavorSettings.builder() //
 				.flavorName("recovery")
-				.identifyByParentFolderPatterns( StringList.strings("Recovery") ) //
+				.identifyBySelfFolderPatterns( StringList.strings("Recovery") ) //
 				.blacklistFolderPatterns( StringList.strings(".*") ) // 
+				.blacklistFilePatterns( StringList.strings(".*") ) //
 				.build();
 		
 		FlavorSettings vueFlavor = FlavorSettings.builder() //
-										.flavorName("vue-folder")
-										.lookForFlavorsInside(true)
-										.identifyByParentFolderPatterns( StringList.strings("VUE", "vue") ) //
-										.blacklistFolderPatterns( StringList.strings("node_modules","\\.git","dist") ) //
-										.build();
+				.flavorName("vue-folder")
+				.lookForFlavorsInside(true)
+				.identifyByParentFolderPatterns( StringList.strings("VUE", "vue") ) //
+				.blacklistFolderPatterns( StringList.strings("node_modules","\\.git","dist") ) //
+				.build();
 		
 //		FlavorSettings eclipseWs = FlavorSettings.builder() //
 //				.flavorName("eclipse-ws")
@@ -107,6 +109,7 @@ public class HardcodedFlavorRegistry implements FlavorRegistry {
 				.lookForFlavorsInside(true)
 				.identifyBySelfFolderPatterns( StringList.strings("apache-tomcat.*") ) //
 				.blacklistFolderPatterns( StringList.strings(".*") ) //
+				.blacklistFilePatterns( StringList.strings(".*") ) //
 				.build();
 		
 		FlavorSettings userDir = FlavorSettings.builder() //
