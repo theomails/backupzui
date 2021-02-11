@@ -37,6 +37,7 @@ public class RealBackupService implements BackupService {
 	
 	@Override
 	public void startNewBackup(Path source, Path destination, String flavorOpt, boolean isResync) throws IOException {
+		stopped = false;
 		startNewBackupInner(source, source, destination, flavorOpt, isResync);
 	}
 	public void startNewBackupInner(Path originalRoot, Path source, Path destination, String flavorOpt, boolean isResync) throws IOException {
@@ -61,6 +62,7 @@ public class RealBackupService implements BackupService {
 		try {
 			Files.walkFileTree(source, myVisitor);
 		} catch (IOException e) {
+			bus.post(new EventException(e, false));
 			System.err.println(e.toString());
 			e.printStackTrace();
 		}
@@ -80,6 +82,7 @@ public class RealBackupService implements BackupService {
 		try {
 			copyService.copyFile(file, matchingDestFile, relFile);
 		} catch (IOException e) {
+			bus.post(new EventException(e, false));
 			System.err.println(e);
 		}
 	}

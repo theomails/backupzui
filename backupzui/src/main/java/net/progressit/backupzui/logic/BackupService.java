@@ -43,9 +43,16 @@ public interface BackupService {
 	@Data
 	public static class EventFileProcessed{
 		private final boolean skipped;
+		private final boolean start;
 		private final Path fromFile;
 		private final Path toFile;
 		private final Path relFile;
+		private final boolean realCopy;
+	}
+	@Data
+	public static class EventException{
+		private final Throwable exception;
+		private final boolean fromSwing;
 	}
 	
 	void startNewBackup(Path source, Path destination, String flavorOpt, boolean isResync) throws IOException;

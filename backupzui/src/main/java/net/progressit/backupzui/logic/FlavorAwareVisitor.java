@@ -64,8 +64,9 @@ public class FlavorAwareVisitor implements FileVisitor<Path> {
 			Path relFile = settings.getSourceBase().relativize(file);
 			Path matchingDestFile = settings.getDestinationBase().resolve(relFile);
 			
+			backupService.post( new BackupService.EventFileProcessed(false, true, file, matchingDestFile, relFile, false) );
 			backupService.copyFile(file, matchingDestFile, relFile);
-			backupService.post( new BackupService.EventFileProcessed(false,file, matchingDestFile, relFile) );
+			backupService.post( new BackupService.EventFileProcessed(false, false, file, matchingDestFile, relFile, false) );
 			//try { Thread.sleep(100); } catch(Exception e) {}
 		}
 		return FileVisitResult.CONTINUE;
