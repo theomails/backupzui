@@ -38,6 +38,12 @@ public class HardcodedFlavorRegistry implements FlavorRegistry {
 				.blacklistFolderPatterns( StringList.strings(".*") ) //
 				.build();
 		
+		FlavorSettings ssdClone = FlavorSettings.builder() //
+				.flavorName("ssd-clone")
+				.identifyBySelfFolderPatterns( StringList.strings("SSD-CLONE") ) //
+				.blacklistFolderPatterns( StringList.strings(".*") ) //
+				.build();
+		
 		FlavorSettings git = FlavorSettings.builder() //
 				.flavorName("git")
 				.identifyBySelfFolderPatterns( StringList.strings("\\.git") ) //
@@ -54,6 +60,19 @@ public class HardcodedFlavorRegistry implements FlavorRegistry {
 				.flavorName("hg")
 				.identifyBySelfFolderPatterns( StringList.strings("\\.hg") ) //
 				.blacklistFolderPatterns( StringList.strings(".*") ) //
+				.build();
+		
+		FlavorSettings unixHidden = FlavorSettings.builder() //
+				.flavorName("unix-hidden")
+				.identifyBySelfFolderPatterns( StringList.strings("\\.(.*)") ) //
+				.blacklistFolderPatterns( StringList.strings(".*") ) //
+				.build();
+		FlavorSettings unixSystem = FlavorSettings.builder() //
+				.flavorName("unix-system")
+				.identifyBySelfFolderPatterns( StringList.strings("/bin","/boot","/dev","/etc","/lib","/media","/mnt",
+						"/opt","/proc","/root","/run","/sbin","/srv","/tmp") ) //Retained /home, /lost+found, /usr, /var
+				.blacklistFolderPatterns( StringList.strings(".*") ) //
+				.blacklistFilePatterns( StringList.strings(".*") ) //
 				.build();
 		
 		FlavorSettings appData = FlavorSettings.builder() //
@@ -140,7 +159,7 @@ public class HardcodedFlavorRegistry implements FlavorRegistry {
 				.blacklistFolderPatterns( StringList.strings("\\$.*") ) //
 				.build();
 		
-		init( Arrays.asList( new FlavorSettings[] {fakePc, m2, git, hg, 
+		init( Arrays.asList( new FlavorSettings[] {fakePc, ssdClone, m2, git, hg, unixHidden, unixSystem,
 				appData, programData, recovery, 
 				zideProject, eclipseProject, vueFlavor, tomcat,
 				userDir, progFilesFlavor, windowsFlavor, 

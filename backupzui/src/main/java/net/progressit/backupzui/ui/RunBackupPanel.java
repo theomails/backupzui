@@ -108,6 +108,9 @@ public class RunBackupPanel extends JPanel {
 		comps.txtFolderToBackup.setText( getDrivePathFirstOrLast(true) );
 		comps.txtBackupDestination.setText( getDrivePathFirstOrLast(false) );
 		
+		comps.taLog.getDocument().addDocumentListener(
+			    new LimitLinesDocumentListener(499) );
+		
 		addHandlers();
 	}
 	public void addHandlers() {
@@ -238,7 +241,8 @@ public class RunBackupPanel extends JPanel {
 			if(event.isRealCopy()) {
 				if(!event.isStart()) {
 					//Log only actual copying of files.
-					comps.taLog.append( "Copied " + fileMsgRel(event) );
+					long fileLen = event.getToFile().toFile().length();
+					comps.taLog.append( "Copied " + fileMsgRel(event) + " (" + sizeText( fileLen, 1 ) + ")" );
 					comps.taLog.append("\n");
 					comps.taLog.getCaret().setDot( Integer.MAX_VALUE );
 					long scanBytes = event.getFromFile().toFile().length();
@@ -263,11 +267,11 @@ public class RunBackupPanel extends JPanel {
 		
 		if(event.isFromSwing()) {
 			comps.taLog.append(event.getException().toString());
-			comps.taLog.append("\n");
+			//comps.taLog.append("\n");
 		}else {
 			SwingUtilities.invokeLater( ()->{
 				comps.taLog.append(event.getException().toString());
-				comps.taLog.append("\n");
+				//comps.taLog.append("\n");
 			} );
 		}
 	}
