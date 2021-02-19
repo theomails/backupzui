@@ -44,6 +44,12 @@ public class HardcodedFlavorRegistry implements FlavorRegistry {
 				.blacklistFolderPatterns( StringList.strings(".*") ) //
 				.build();
 		
+		FlavorSettings ssdToDellFolder = FlavorSettings.builder() //
+				.flavorName("ssd-to-dell")
+				.identifyBySelfFolderPatterns( StringList.strings("Zoho Dell Ubuntu 2021") ) //
+				.blacklistFolderPatterns( StringList.strings(".*") ) //
+				.build();
+		
 		FlavorSettings git = FlavorSettings.builder() //
 				.flavorName("git")
 				.identifyBySelfFolderPatterns( StringList.strings("\\.git") ) //
@@ -69,10 +75,29 @@ public class HardcodedFlavorRegistry implements FlavorRegistry {
 				.build();
 		FlavorSettings unixSystem = FlavorSettings.builder() //
 				.flavorName("unix-system")
-				.identifyBySelfFolderPatterns( StringList.strings("/bin","/boot","/dev","/etc","/lib","/media","/mnt",
-						"/opt","/proc","/root","/run","/sbin","/srv","/tmp") ) //Retained /home, /lost+found, /usr, /var
+				.identifyByParentFolderPatterns(StringList.strings("/"))
+				.identifyBySelfFolderPatterns( StringList.strings("bin","boot","dev","etc","lib","lib32","lib64","libx32","media","mnt",
+						"opt","proc","root","run","sbin","snap","srv","sys","usr","tmp") ) //Retained /home, /lost+found, /usr, /var
 				.blacklistFolderPatterns( StringList.strings(".*") ) //
 				.blacklistFilePatterns( StringList.strings(".*") ) //
+				.build();
+		
+		FlavorSettings unixTrash = FlavorSettings.builder() //
+				.flavorName("unix-trash")
+				.identifyBySelfFolderPatterns( StringList.strings("\\.Trash(.*)") ) //
+				.blacklistFolderPatterns( StringList.strings(".*") ) //
+				.build();
+		
+		FlavorSettings sysVolInfo = FlavorSettings.builder() //
+				.flavorName("sys-vol-info")
+				.identifyBySelfFolderPatterns( StringList.strings("System Volume Information") ) //
+				.blacklistFolderPatterns( StringList.strings(".*") ) // 
+				.build();
+		
+		FlavorSettings winRecycle = FlavorSettings.builder() //
+				.flavorName("win-recyclebin")
+				.identifyBySelfFolderPatterns( StringList.strings("$RECYCLE.BIN") ) //
+				.blacklistFolderPatterns( StringList.strings(".*") ) // 
 				.build();
 		
 		FlavorSettings appData = FlavorSettings.builder() //
@@ -88,9 +113,9 @@ public class HardcodedFlavorRegistry implements FlavorRegistry {
 				.blacklistFilePatterns( StringList.strings(".*") ) //
 				.build();
 		
-		FlavorSettings recovery = FlavorSettings.builder() //
-				.flavorName("recovery")
-				.identifyBySelfFolderPatterns( StringList.strings("Recovery") ) //
+		FlavorSettings recoveryAndBoot = FlavorSettings.builder() //
+				.flavorName("recovery-and-boot")
+				.identifyBySelfFolderPatterns( StringList.strings("Recovery", "boot", "inetpub", "SYSTEM.SAV") ) //
 				.blacklistFolderPatterns( StringList.strings(".*") ) // 
 				.blacklistFilePatterns( StringList.strings(".*") ) //
 				.build();
@@ -130,6 +155,13 @@ public class HardcodedFlavorRegistry implements FlavorRegistry {
 				.blacklistFolderPatterns( StringList.strings(".*") ) //
 				.blacklistFilePatterns( StringList.strings(".*") ) //
 				.build();
+		FlavorSettings knownDrivePrograms = FlavorSettings.builder() //
+				.flavorName("known-drive-programs")
+				.identifyBySelfFolderPatterns( StringList.strings("Autodesk.*", "g", "go", "Google SketchUp.*", "HP", 
+						"Intel", "kingsoft", "oracledata", "oraclexe", "WINAVR") ) //
+				.blacklistFolderPatterns( StringList.strings(".*") ) //
+				.blacklistFilePatterns( StringList.strings(".*") ) //
+				.build();
 		
 		FlavorSettings userDir = FlavorSettings.builder() //
 				.flavorName("user-dir")
@@ -159,9 +191,13 @@ public class HardcodedFlavorRegistry implements FlavorRegistry {
 				.blacklistFolderPatterns( StringList.strings("\\$.*") ) //
 				.build();
 		
-		init( Arrays.asList( new FlavorSettings[] {fakePc, ssdClone, m2, git, hg, unixHidden, unixSystem,
-				appData, programData, recovery, 
-				zideProject, eclipseProject, vueFlavor, tomcat,
+		init( Arrays.asList( new FlavorSettings[] {
+				fakePc, ssdClone, ssdToDellFolder, 
+				m2, git, hg, 
+				unixHidden, unixSystem, unixTrash,
+				sysVolInfo, winRecycle,
+				appData, programData, recoveryAndBoot, 
+				zideProject, eclipseProject, vueFlavor, tomcat, knownDrivePrograms,
 				userDir, progFilesFlavor, windowsFlavor, 
 				genericFlavor} ) );
 	}

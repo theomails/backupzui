@@ -50,44 +50,73 @@ public class RealFlavorService implements FlavorService {
 		}
 		return null; //Should not get here, as there should be a generic flavor which matches any folder.
 	}
+	
+	/**
+	 * Every criteria, if given, gets added to the AND logic. So, all of them must be true if provided.
+	 * This makes it easy to pin point folders' flavors.
+	 * 
+	 * @param folder
+	 * @param newFlavorSettings
+	 * @return
+	 * @throws IOException
+	 */
 	private boolean checkFlavorMatches(Path folder, FlavorSettings newFlavorSettings) throws IOException {
+		boolean identifyBySelfFolderPatterns=false;
+		boolean identifyByParentFolderPatterns=false;
+		boolean identifyByChildFolderPatterns=false;
+		boolean identifyBySiblingFolderPatterns=false;		
+		boolean identifyByChildFilePatterns=false;
+		boolean identifyBySiblingFilePatterns=false;
+		
+		boolean identifiedBySelfFolderPatterns=false;
+		boolean identifiedByParentFolderPatterns=false;
+		boolean identifiedByChildFolderPatterns=false;
+		boolean identifiedBySiblingFolderPatterns=false;		
+		boolean identifiedByChildFilePatterns=false;
+		boolean identifiedBySiblingFilePatterns=false;
+		
 		//By self pattern
 		if(newFlavorSettings.identifyBySelfFolderPatterns!=null && newFlavorSettings.identifyBySelfFolderPatterns.size()>0) {
+			identifyBySelfFolderPatterns = true;
 			for(String selfFolderPattern:newFlavorSettings.identifyBySelfFolderPatterns) {
 				Pattern pattern = getPattern(selfFolderPattern);
 				boolean matches = matches(selfFolderPattern, pattern, folder);
-				if(matches) return true;
+				if(matches) identifiedBySelfFolderPatterns = true;
 			}
 		}
 		
 		//By parent pattern
 		if(newFlavorSettings.identifyByParentFolderPatterns!=null && newFlavorSettings.identifyByParentFolderPatterns.size()>0) {
+			identifyByParentFolderPatterns = true;
 			Path parent = folder.getParent();
 			if(parent!=null) { //Parent will be null for Root/drives
 				for(String parentFolderPattern:newFlavorSettings.identifyByParentFolderPatterns) {
 					Pattern pattern = getPattern(parentFolderPattern);
 					boolean matches = matches(parentFolderPattern, pattern, parent);
-					if(matches) return true;
+					if(matches) identifiedByParentFolderPatterns = true;
 				}
 			}else {
+				//This part is not covered in the AND logic. Not sure what is this special logic.
 				boolean starAllowed = newFlavorSettings.identifyByParentFolderPatterns.contains("glob:*");
 				if(starAllowed) return true;
 			}
 		}
 		//By child patterns
 		if(newFlavorSettings.identifyByChildFolderPatterns!=null && newFlavorSettings.identifyByChildFolderPatterns.size()>0) {
+			identifyByChildFolderPatterns = true;
 			List<Path> childFolders = getImmediateFilesOrFolers(folder, false);
 			for(String childFolderPattern:newFlavorSettings.identifyByChildFolderPatterns) {
 				Pattern pattern = getPattern(childFolderPattern);
 				
 				for(Path childFolder:childFolders) {
 					boolean matches = matches(childFolderPattern, pattern, childFolder);
-					if(matches) return true;
+					if(matches) identifiedByChildFolderPatterns = true;
 				}
 			}
 		}
 		//By sibling patterns
 		if(newFlavorSettings.identifyBySiblingFolderPatterns!=null && newFlavorSettings.identifyBySiblingFolderPatterns.size()>0) {
+			identifyBySiblingFolderPatterns = true;
 			if(folder.getParent()!=null) {
 				List<Path> siblingFolders = getImmediateFilesOrFolers(folder.getParent(), false);
 				for(String siblingFolderPattern:newFlavorSettings.identifyBySiblingFolderPatterns) {
@@ -95,25 +124,27 @@ public class RealFlavorService implements FlavorService {
 					
 					for(Path siblingFolder:siblingFolders) {
 						boolean matches = matches(siblingFolderPattern, pattern, siblingFolder);
-						if(matches) return true;
+						if(matches) identifiedBySiblingFolderPatterns = true;
 					}
 				}
 			} //Else?
 		}		
 		//By child FILE patterns
 		if(newFlavorSettings.identifyByChildFilePatterns!=null && newFlavorSettings.identifyByChildFilePatterns.size()>0) {
+			identifyByChildFilePatterns = true;
 			List<Path> childFiles = getImmediateFilesOrFolers(folder, true);
 			for(String childFilePattern:newFlavorSettings.identifyByChildFilePatterns) {
 				Pattern pattern = getPattern(childFilePattern);
 				
 				for(Path childFile:childFiles) {
 					boolean matches = matches(childFilePattern, pattern, childFile);
-					if(matches) return true;
+					if(matches) identifiedByChildFilePatterns = true;
 				}
 			}
 		}
 		//By sibling FILE patterns
 		if(newFlavorSettings.identifyBySiblingFilePatterns!=null && newFlavorSettings.identifyBySiblingFilePatterns.size()>0) {
+			identifyBySiblingFilePatterns = true;
 			if(folder.getParent()!=null) {
 				List<Path> siblingFiles = getImmediateFilesOrFolers(folder.getParent(), true);
 				for(String siblingFilePattern:newFlavorSettings.identifyBySiblingFilePatterns) {
@@ -121,13 +152,21 @@ public class RealFlavorService implements FlavorService {
 					
 					for(Path siblingFile:siblingFiles) {
 						boolean matches = matches(siblingFilePattern, pattern, siblingFile);
-						if(matches) return true;
+						if(matches) identifiedBySiblingFilePatterns = true;
 					}
 				}
 			}//Else?
 		}		
 		
-		return false;
+		if(identifyBySelfFolderPatterns && !identifiedBySelfFolderPatterns) return false;
+		if(identifyByParentFolderPatterns && !identifiedByParentFolderPatterns) return false;
+		if(identifyByChildFolderPatterns && !identifiedByChildFolderPatterns) return false;
+		if(identifyBySiblingFolderPatterns && !identifiedBySiblingFolderPatterns) return false;
+		if(identifyByChildFilePatterns && !identifiedByChildFilePatterns) return false;
+		if(identifyBySiblingFilePatterns && !identifiedBySiblingFilePatterns) return false;
+
+		//Nothing to be checked, or whatever needs to be checked has been matched.
+		return true;
 	}
 	
 	private boolean allowsFlavor(String flavor, FlavorSettings currentFlavorSettingsOpt) {
