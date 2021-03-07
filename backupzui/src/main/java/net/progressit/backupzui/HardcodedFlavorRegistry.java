@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.google.inject.Inject;
 
+import lombok.Getter;
 import net.progressit.backupzui.api.FlavorSettings;
 import net.progressit.backupzui.util.StringList;
 
@@ -15,6 +16,9 @@ public class HardcodedFlavorRegistry implements FlavorRegistry {
 	
 	private final List<FlavorSettings> flavorExecs = new ArrayList<>();
 	private final Map<String, FlavorSettings> flavorExecMap = new LinkedHashMap<>();
+	
+	@Getter private final float version = 1.0f;
+	@Getter private final String versionDate = "01-03-2021";
 	
 	@Inject
 	public HardcodedFlavorRegistry() {
@@ -225,4 +229,15 @@ public class HardcodedFlavorRegistry implements FlavorRegistry {
 		names.addAll( flavorExecMap.keySet() );
 		return names;
 	}
+
+	@Override
+	public boolean isAvailable() {
+		return true;
+	}
+
+	@Override
+	public void saveSettings(List<FlavorSettings> settings) {
+		//NOOP
+	}
+
 }

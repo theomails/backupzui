@@ -23,7 +23,7 @@ public class LiveModule extends AbstractModule{
 		binder().requireAtInjectOnConstructors();
 		
 		bind(BackupHistoryService.class).to(UserJsonBackupHistoryService.class).in(Scopes.SINGLETON);
-		bind(FlavorRegistry.class).to(HardcodedFlavorRegistry.class).in(Scopes.SINGLETON);
+		bind(FlavorRegistry.class).toProvider(FlavorRegistryProvider.class).in(Scopes.SINGLETON);
 		bind(EventBus.class).toInstance(new EventBus()); //Shows that has no dependencies.
 		bind(FlavorService.class).to(RealFlavorService.class).in(Scopes.SINGLETON);
 		bind(BackupService.class).to(RealBackupService.class).in(Scopes.SINGLETON);
