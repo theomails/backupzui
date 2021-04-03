@@ -22,4 +22,9 @@ public class Main {
 		mw.init();
 		mw.setVisible(true);	
 	}
+	
+	public static Injector getBackupzInjector() {
+		Injector injector = Guice.createInjector(new LiveModule());
+		return injector;
+	}
 }
