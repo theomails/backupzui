@@ -230,6 +230,19 @@
       "lookForFlavorsInside": true
     },
     {
+      "flavorName": "node-modules",
+      "identifyBySelfFolderPatterns": [
+        "node_modules"
+      ],
+      "blacklistFolderPatterns": [
+        ".*"
+      ],
+      "blacklistFilePatterns": [
+        ".*"
+      ],
+      "lookForFlavorsInside": false
+    },
+    {
       "flavorName": "tomcat-dir",
       "identifyBySelfFolderPatterns": [
         "apache-tomcat.*"
