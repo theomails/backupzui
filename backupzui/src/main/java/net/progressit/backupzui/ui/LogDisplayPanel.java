@@ -29,6 +29,7 @@ public class LogDisplayPanel extends JPanel {
 	private final JPanel pnlContext = new JPanel(new BorderLayout());
 
 	private BackupHistoryService dataLogService;
+	@SuppressWarnings("unused")
 	private BackupService backupService;
 	public LogDisplayPanel(BackupHistoryService dataLogService, BackupService backupService, EventBus bus) {
 		super(new MigLayout("insets 0","[grow, fill]","[300::, grow, fill][][300::, grow, fill]"));

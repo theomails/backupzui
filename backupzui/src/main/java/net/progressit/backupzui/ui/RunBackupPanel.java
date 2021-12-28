@@ -298,6 +298,7 @@ public class RunBackupPanel extends JPanel {
 	}
 	
 	
+	@SuppressWarnings("unused")
 	private void setEnabledForPanel(JPanel panel, boolean enabled) {
 		for(Component c:panel.getComponents()) {
 			if(c instanceof JPanel) {
