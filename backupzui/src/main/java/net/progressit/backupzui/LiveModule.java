@@ -1,5 +1,6 @@
 package net.progressit.backupzui;
 
+import com.google.common.eventbus.EventBus;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 
@@ -21,6 +22,7 @@ public class LiveModule extends AbstractModule{
 		binder().requireExplicitBindings();
 		binder().requireAtInjectOnConstructors();
 		
+		bind(EventBus.class).toInstance(new EventBus()); //requireExplicitBindings. Shows that has no dependencies.
 		bind(BackupHistoryService.class).to(UserJsonBackupHistoryService.class).in(Scopes.SINGLETON);
 		bind(FlavorRegistry.class).toProvider(FlavorRegistryProvider.class).in(Scopes.SINGLETON);
 		bind(FlavorService.class).to(RealFlavorService.class).in(Scopes.SINGLETON);
