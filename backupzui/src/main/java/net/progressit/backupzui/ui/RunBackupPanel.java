@@ -86,12 +86,12 @@ public class RunBackupPanel extends JPanel {
 	
 	private BackupService backupService;
 	private EventBus bus;
-	public RunBackupPanel(BackupService backupService, EventBus bus) {
+	public RunBackupPanel(BackupService backupService) {
 		super(new MigLayout("insets 0","[grow, fill]","[][][grow, fill]"));
 		
 		bus.register(this);
 		this.backupService = backupService;
-		this.bus = bus;
+		this.bus = backupService.getBus();
 		add(comps.pnlStart, "wrap");
 		add(comps.pnlProgress, "hidemode 2, wrap");
 		add(comps.pnlLog, "");

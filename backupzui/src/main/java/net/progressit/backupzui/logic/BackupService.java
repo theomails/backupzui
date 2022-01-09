@@ -3,6 +3,8 @@ package net.progressit.backupzui.logic;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import com.google.common.eventbus.EventBus;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import net.progressit.backupzui.api.FlavorSettings;
@@ -66,5 +68,7 @@ public interface BackupService {
 	boolean isStopped();
 	
 	void stop();
+	
+	EventBus getBus();
 
 }

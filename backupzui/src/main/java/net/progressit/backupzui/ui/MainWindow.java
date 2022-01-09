@@ -21,7 +21,7 @@ public class MainWindow extends JFrame{
 	public MainWindow(BackupHistoryService dataLogService, BackupService backupService, EventBus bus) {
 		this.bus = bus;
 		//this.logPanel = new LogDisplayPanel(dataLogService, backupService, bus);
-		this.runPanel = new RunBackupPanel(backupService, bus);
+		this.runPanel = new RunBackupPanel(backupService);
 	}
 	
 	private JPanel mainPanel = new JPanel(new MigLayout("insets 10","[][600::,grow 3,fill]","[500::,grow,fill][]"));

@@ -78,6 +78,11 @@ public class RealBackupService implements BackupService {
 	}
 	
 	@Override
+	public EventBus getBus() {
+		return bus;
+	}
+	
+	@Override
 	public void copyFile(Path file, Path matchingDestFile, Path relFile) {
 		try {
 			copyService.copyFile(file, matchingDestFile, relFile);

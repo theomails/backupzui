@@ -8,8 +8,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-import com.google.common.eventbus.EventBus;
-
 import net.miginfocom.swing.MigLayout;
 import net.progressit.backupzui.logic.BackupHistoryService;
 import net.progressit.backupzui.logic.BackupService;
@@ -31,10 +29,10 @@ public class LogDisplayPanel extends JPanel {
 	private BackupHistoryService dataLogService;
 	@SuppressWarnings("unused")
 	private BackupService backupService;
-	public LogDisplayPanel(BackupHistoryService dataLogService, BackupService backupService, EventBus bus) {
+	public LogDisplayPanel(BackupHistoryService dataLogService, BackupService backupService) {
 		super(new MigLayout("insets 0","[grow, fill]","[300::, grow, fill][][300::, grow, fill]"));
 		
-		bus.register(this);
+		backupService.getBus().register(this);
 		this.dataLogService = dataLogService;
 		this.backupService = backupService;
 		
@@ -48,7 +46,7 @@ public class LogDisplayPanel extends JPanel {
 		pnlButtons.add(btnResyncBackup, "skip 1");
 		pnlButtons.add(btnNewBackup, "");
 		
-		pnlContext.add(new RunBackupPanel(backupService, bus), BorderLayout.CENTER);
+		pnlContext.add(new RunBackupPanel(backupService), BorderLayout.CENTER);
 		
 		initData();
 	}
