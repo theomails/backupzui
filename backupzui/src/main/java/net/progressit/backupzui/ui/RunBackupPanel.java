@@ -89,6 +89,7 @@ public class RunBackupPanel extends JPanel {
 	public RunBackupPanel(BackupService backupService) {
 		super(new MigLayout("insets 0","[grow, fill]","[][][grow, fill]"));
 		
+		bus = backupService.getBus();
 		bus.register(this);
 		this.backupService = backupService;
 		this.bus = backupService.getBus();
