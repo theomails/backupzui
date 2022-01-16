@@ -1,4 +1,4 @@
-package net.progressit.backupzui.ui;
+package net.progressit.backupzui.ui.helpers;
 
 import javax.swing.*;
 import javax.swing.event.*;

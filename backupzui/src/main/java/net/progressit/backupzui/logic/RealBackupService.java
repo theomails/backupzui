@@ -11,7 +11,6 @@ import com.google.inject.Inject;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import net.progressit.backupzui.UserHomeJsonFlavorRegistry;
 import net.progressit.backupzui.api.FlavorSettings;
 
 public class RealBackupService  {
@@ -62,12 +61,12 @@ public class RealBackupService  {
 		private final boolean fromSwing;
 	}
 	
-	private FlavorService flavorService;
+	private RealFlavorService flavorService;
 	private UserHomeJsonFlavorRegistry flavorRegistry;
 	private CopyService copyService;
 	private EventBus bus;
 	@Inject
-	public RealBackupService(FlavorService flavorService, UserHomeJsonFlavorRegistry flavorRegistry, CopyService copyService, EventBus bus) {
+	public RealBackupService(RealFlavorService flavorService, UserHomeJsonFlavorRegistry flavorRegistry, CopyService copyService, EventBus bus) {
 		this.flavorService = flavorService;
 		this.flavorRegistry = flavorRegistry;
 		this.copyService = copyService;

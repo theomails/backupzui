@@ -11,9 +11,9 @@ import net.progressit.backupzui.logic.RealBackupService.BackupRunSettings;
 
 public class FlavorAwareVisitor implements FileVisitor<Path> {
 	private RealBackupService backupService;
-	private FlavorService flavorService;
+	private RealFlavorService flavorService;
 	private BackupRunSettings settings;
-	public FlavorAwareVisitor(RealBackupService backupService, FlavorService flavorService, BackupRunSettings settings) {
+	public FlavorAwareVisitor(RealBackupService backupService, RealFlavorService flavorService, BackupRunSettings settings) {
 		this.backupService = backupService;
 		this.flavorService = flavorService;
 		this.settings = settings;

@@ -27,6 +27,7 @@ import net.progressit.backupzui.logic.RealBackupService;
 import net.progressit.backupzui.logic.RealBackupService.EventException;
 import net.progressit.backupzui.logic.RealBackupService.EventFileProcessed;
 import net.progressit.backupzui.logic.RealBackupService.EventFolderProcessed;
+import net.progressit.backupzui.ui.helpers.LimitLinesDocumentListener;
 
 public class RunBackupPanel extends JPanel {
 	private static final long serialVersionUID = 1L;

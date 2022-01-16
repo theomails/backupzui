@@ -1,4 +1,4 @@
-package net.progressit.backupzui;
+package net.progressit.backupzui.logic;
 
 import java.io.File;
 import java.io.FileReader;

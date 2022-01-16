@@ -11,10 +11,9 @@ import java.util.stream.Stream;
 
 import com.google.inject.Inject;
 
-import net.progressit.backupzui.UserHomeJsonFlavorRegistry;
 import net.progressit.backupzui.api.FlavorSettings;
 
-public class RealFlavorService implements FlavorService {
+public class RealFlavorService {
 	private static final List<String> EMPTY_LIST = new ArrayList<>();
 	
 	private UserHomeJsonFlavorRegistry flavorRegistry;
@@ -23,7 +22,6 @@ public class RealFlavorService implements FlavorService {
 		this.flavorRegistry = flavorRegistry;
 	}
 	
-	@Override
 	public String detectFlavor(Path folder, FlavorSettings currentFlavorSettingsOpt) {
 		if(currentFlavorSettingsOpt!=null && !currentFlavorSettingsOpt.lookForFlavorsInside) {
 			//Not allowed to look for flavors inside.
@@ -235,7 +233,6 @@ public class RealFlavorService implements FlavorService {
 	    }
 	}
 
-	@Override
 	public boolean isFolderAllowed(FlavorSettings flavorSettings, Path dir) {
 		//System.out.println("isFolderAllowed " + dir);
 		if(flavorSettings.getBlacklistFolderPatterns()!=null && flavorSettings.getBlacklistFolderPatterns().size()>0) {
@@ -266,7 +263,6 @@ public class RealFlavorService implements FlavorService {
 			return false;
 		}
 	}
-	@Override
 	public boolean isFileAllowed(FlavorSettings flavorSettings, Path file) {
 		//System.out.println("isFileAllowed " + file);
 		if(flavorSettings.getBlacklistFilePatterns()!=null && flavorSettings.getBlacklistFilePatterns().size()>0) {
