@@ -10,15 +10,14 @@ import com.google.common.eventbus.EventBus;
 import com.google.inject.Inject;
 
 import net.miginfocom.swing.MigLayout;
-import net.progressit.backupzui.logic.BackupHistoryService;
-import net.progressit.backupzui.logic.BackupService;
+import net.progressit.backupzui.logic.RealBackupService;
 
 public class MainWindow extends JFrame{
 	private static final long serialVersionUID = 1L;
 
 	private EventBus bus;
 	@Inject
-	public MainWindow(BackupHistoryService dataLogService, BackupService backupService, EventBus bus) {
+	public MainWindow(RealBackupService backupService, EventBus bus) {
 		this.bus = bus;
 		//this.logPanel = new LogDisplayPanel(dataLogService, backupService, bus);
 		this.runPanel = new RunBackupPanel(backupService);

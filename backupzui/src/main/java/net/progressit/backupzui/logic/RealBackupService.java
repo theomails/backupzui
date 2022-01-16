@@ -9,16 +9,65 @@ import java.util.Arrays;
 import com.google.common.eventbus.EventBus;
 import com.google.inject.Inject;
 
-import net.progressit.backupzui.FlavorRegistry;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import net.progressit.backupzui.UserHomeJsonFlavorRegistry;
 import net.progressit.backupzui.api.FlavorSettings;
 
-public class RealBackupService implements BackupService {
+public class RealBackupService  {
+	@Data
+	@AllArgsConstructor
+	public static class BackupRunSettings{
+		private final Path originalRoot;
+		private final Path sourceBase;
+		private final Path destinationBase;
+		private FlavorSettings flavor;
+		private final boolean resync;
+	}
+	
+	@Data
+	public static class EventBackupStarted{
+		private final long backupId; //nanos at start
+		private final boolean newBackup;
+		private final Path fromFolder;
+		private final Path toFolder;
+	}	
+	@Data
+	public static class EventBackupCompleted{
+		private final long backupId;
+	}
+	@Data
+	public static class EventFolderProcessed{
+		private final Path originalRoot;
+		private final Path flavorRoot;
+		private final String flavor;
+		private final boolean skipped;
+		private final boolean start;
+		private final Path fromFolder;
+		private final Path toFolder;
+		private final Path relFolder;
+	}
+	@Data
+	public static class EventFileProcessed{
+		private final boolean skipped;
+		private final boolean start;
+		private final Path fromFile;
+		private final Path toFile;
+		private final Path relFile;
+		private final boolean realCopy;
+	}
+	@Data
+	public static class EventException{
+		private final Throwable exception;
+		private final boolean fromSwing;
+	}
+	
 	private FlavorService flavorService;
-	private FlavorRegistry flavorRegistry;
+	private UserHomeJsonFlavorRegistry flavorRegistry;
 	private CopyService copyService;
 	private EventBus bus;
 	@Inject
-	public RealBackupService(FlavorService flavorService, FlavorRegistry flavorRegistry, CopyService copyService, EventBus bus) {
+	public RealBackupService(FlavorService flavorService, UserHomeJsonFlavorRegistry flavorRegistry, CopyService copyService, EventBus bus) {
 		this.flavorService = flavorService;
 		this.flavorRegistry = flavorRegistry;
 		this.copyService = copyService;
@@ -35,7 +84,6 @@ public class RealBackupService implements BackupService {
 		stopped = true;
 	}
 	
-	@Override
 	public void startNewBackup(Path source, Path destination, String flavorOpt, boolean isResync) throws IOException {
 		stopped = false;
 		startNewBackupInner(source, source, destination, flavorOpt, isResync);
@@ -72,17 +120,14 @@ public class RealBackupService implements BackupService {
 
 	}
 
-	@Override
 	public void post(Object event) {
 		bus.post(event);
 	}
 	
-	@Override
 	public EventBus getBus() {
 		return bus;
 	}
 	
-	@Override
 	public void copyFile(Path file, Path matchingDestFile, Path relFile) {
 		try {
 			copyService.copyFile(file, matchingDestFile, relFile);

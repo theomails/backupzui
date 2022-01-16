@@ -8,7 +8,7 @@ import java.nio.file.StandardCopyOption;
 import com.google.common.eventbus.EventBus;
 import com.google.inject.Inject;
 
-import net.progressit.backupzui.logic.BackupService.EventException;
+import net.progressit.backupzui.logic.RealBackupService.EventException;
 
 public class RealCopyIfNeededService implements CopyService {
 	private EventBus bus;
@@ -30,9 +30,9 @@ public class RealCopyIfNeededService implements CopyService {
 		
 		if(copy) {
 			try {
-				bus.post( new BackupService.EventFileProcessed(false, true, file, matchingDestFile, relFile, true) );
+				bus.post( new RealBackupService.EventFileProcessed(false, true, file, matchingDestFile, relFile, true) );
 				Files.copy(file, matchingDestFile, StandardCopyOption.REPLACE_EXISTING);
-				bus.post( new BackupService.EventFileProcessed(false, false, file, matchingDestFile, relFile, true) );
+				bus.post( new RealBackupService.EventFileProcessed(false, false, file, matchingDestFile, relFile, true) );
 				System.out.print(".");
 			} catch (IOException e) {
 				bus.post(new EventException(e, false));

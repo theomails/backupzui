@@ -7,13 +7,13 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import net.progressit.backupzui.logic.BackupService.BackupRunSettings;
+import net.progressit.backupzui.logic.RealBackupService.BackupRunSettings;
 
 public class FlavorAwareVisitor implements FileVisitor<Path> {
-	private BackupService backupService;
+	private RealBackupService backupService;
 	private FlavorService flavorService;
 	private BackupRunSettings settings;
-	public FlavorAwareVisitor(BackupService backupService, FlavorService flavorService, BackupRunSettings settings) {
+	public FlavorAwareVisitor(RealBackupService backupService, FlavorService flavorService, BackupRunSettings settings) {
 		this.backupService = backupService;
 		this.flavorService = flavorService;
 		this.settings = settings;
@@ -51,7 +51,7 @@ public class FlavorAwareVisitor implements FileVisitor<Path> {
 			}
 		}
 		
-		backupService.post( new BackupService.EventFolderProcessed(settings.getOriginalRoot(), settings.getSourceBase(), settings.getFlavor().flavorName, false, true, dir, matchingDest, relPath) );
+		backupService.post( new RealBackupService.EventFolderProcessed(settings.getOriginalRoot(), settings.getSourceBase(), settings.getFlavor().flavorName, false, true, dir, matchingDest, relPath) );
 		return FileVisitResult.CONTINUE;
 	}
 
@@ -66,9 +66,9 @@ public class FlavorAwareVisitor implements FileVisitor<Path> {
 			Path relFile = settings.getSourceBase().relativize(file);
 			Path matchingDestFile = settings.getDestinationBase().resolve(relFile);
 			
-			backupService.post( new BackupService.EventFileProcessed(false, true, file, matchingDestFile, relFile, false) );
+			backupService.post( new RealBackupService.EventFileProcessed(false, true, file, matchingDestFile, relFile, false) );
 			backupService.copyFile(file, matchingDestFile, relFile);
-			backupService.post( new BackupService.EventFileProcessed(false, false, file, matchingDestFile, relFile, false) );
+			backupService.post( new RealBackupService.EventFileProcessed(false, false, file, matchingDestFile, relFile, false) );
 			//try { Thread.sleep(100); } catch(Exception e) {}
 		}else {
 			System.out.print("z");
@@ -95,7 +95,7 @@ public class FlavorAwareVisitor implements FileVisitor<Path> {
 	public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
 		//System.out.print("postVisitDirectory " + dir);
 		
-		backupService.post( new BackupService.EventFolderProcessed(settings.getOriginalRoot(), settings.getSourceBase(), settings.getFlavor().flavorName, false, false, dir, null, null) );
+		backupService.post( new RealBackupService.EventFolderProcessed(settings.getOriginalRoot(), settings.getSourceBase(), settings.getFlavor().flavorName, false, false, dir, null, null) );
 		return FileVisitResult.CONTINUE;
 	}
 };

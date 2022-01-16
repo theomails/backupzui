@@ -17,7 +17,7 @@ import com.google.inject.Inject;
 
 import net.progressit.backupzui.api.FlavorSettings;
 
-public class UserHomeJsonFlavorRegistry implements FlavorRegistry {
+public class UserHomeJsonFlavorRegistry {
 	
 	public static class UserHomeJsonFlavorConfig{
 		private float version;
@@ -57,28 +57,23 @@ public class UserHomeJsonFlavorRegistry implements FlavorRegistry {
 		}
 	}
 	
-	@Override
 	public List<FlavorSettings> getOrderedFlavorExecs() {
 		return flavorExecs;
 	}
-	@Override
 	public FlavorSettings getSettings(String flavorName) {
 		FlavorSettings settings =  flavorExecMap.get(flavorName);
 		return settings;
 	}
-	@Override
 	public List<String> getFlavorNames(){
 		List<String> names = new ArrayList<>();
 		names.addAll( flavorExecMap.keySet() );
 		return names;
 	}
 
-	@Override
 	public boolean isAvailable() {
 		return config != null;
 	}
 
-	@Override
 	public void saveSettings(List<FlavorSettings> settings) {
 		UserHomeJsonFlavorConfig newConfig = new UserHomeJsonFlavorConfig();
 		if(config==null) {
@@ -108,12 +103,10 @@ public class UserHomeJsonFlavorRegistry implements FlavorRegistry {
 		return userHomeJsonFlavorConfig;
 	}
 	
-	@Override
 	public float getVersion() {
 		return config==null?0:config.version;
 	}
 
-	@Override
 	public String getVersionDate() {
 		return config==null?"-":config.versionDate;
 	}

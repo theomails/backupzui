@@ -11,15 +11,15 @@ import java.util.stream.Stream;
 
 import com.google.inject.Inject;
 
-import net.progressit.backupzui.FlavorRegistry;
+import net.progressit.backupzui.UserHomeJsonFlavorRegistry;
 import net.progressit.backupzui.api.FlavorSettings;
 
 public class RealFlavorService implements FlavorService {
 	private static final List<String> EMPTY_LIST = new ArrayList<>();
 	
-	private FlavorRegistry flavorRegistry;
+	private UserHomeJsonFlavorRegistry flavorRegistry;
 	@Inject
-	public RealFlavorService(FlavorRegistry flavorRegistry) {
+	public RealFlavorService(UserHomeJsonFlavorRegistry flavorRegistry) {
 		this.flavorRegistry = flavorRegistry;
 	}
 	

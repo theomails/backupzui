@@ -23,10 +23,10 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
 import net.miginfocom.swing.MigLayout;
-import net.progressit.backupzui.logic.BackupService;
-import net.progressit.backupzui.logic.BackupService.EventException;
-import net.progressit.backupzui.logic.BackupService.EventFileProcessed;
-import net.progressit.backupzui.logic.BackupService.EventFolderProcessed;
+import net.progressit.backupzui.logic.RealBackupService;
+import net.progressit.backupzui.logic.RealBackupService.EventException;
+import net.progressit.backupzui.logic.RealBackupService.EventFileProcessed;
+import net.progressit.backupzui.logic.RealBackupService.EventFolderProcessed;
 
 public class RunBackupPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -84,9 +84,9 @@ public class RunBackupPanel extends JPanel {
 	private File toFolder = null;
 	private boolean running = false;
 	
-	private BackupService backupService;
+	private RealBackupService backupService;
 	private EventBus bus;
-	public RunBackupPanel(BackupService backupService) {
+	public RunBackupPanel(RealBackupService backupService) {
 		super(new MigLayout("insets 0","[grow, fill]","[][][grow, fill]"));
 		
 		bus = backupService.getBus();
