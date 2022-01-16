@@ -39,7 +39,7 @@ public class RealFlavorService implements FlavorService {
 					FlavorSettings newFlavorSettings = flavorRegistry.getSettings(name);
 					boolean flavorMatched = checkFlavorMatches(folder, newFlavorSettings);
 					if(flavorMatched) {
-						System.out.println("Found flavor " + name);
+						System.out.print("\nFound flavor " + name);
 						return name;
 					}
 				}catch(IOException e) {
@@ -81,7 +81,10 @@ public class RealFlavorService implements FlavorService {
 			for(String selfFolderPattern:newFlavorSettings.identifyBySelfFolderPatterns) {
 				Pattern pattern = getPattern(selfFolderPattern);
 				boolean matches = matches(selfFolderPattern, pattern, folder);
-				if(matches) identifiedBySelfFolderPatterns = true;
+				if(matches) {
+					identifiedBySelfFolderPatterns = true;
+					break; //even one matches
+				}
 			}
 		}
 		
@@ -93,24 +96,31 @@ public class RealFlavorService implements FlavorService {
 				for(String parentFolderPattern:newFlavorSettings.identifyByParentFolderPatterns) {
 					Pattern pattern = getPattern(parentFolderPattern);
 					boolean matches = matches(parentFolderPattern, pattern, parent);
-					if(matches) identifiedByParentFolderPatterns = true;
+					if(matches) {
+						identifiedByParentFolderPatterns = true;
+						break; //even one matches
+					}
 				}
 			}else {
-				//This part is not covered in the AND logic. Not sure what is this special logic.
-				boolean starAllowed = newFlavorSettings.identifyByParentFolderPatterns.contains("glob:*");
+				//Even root folder will be considered if "all" is configured 
+				boolean starAllowed = newFlavorSettings.identifyByParentFolderPatterns.contains("glob:*") || newFlavorSettings.identifyByParentFolderPatterns.contains(".*");
 				if(starAllowed) return true;
 			}
 		}
 		//By child patterns
 		if(newFlavorSettings.identifyByChildFolderPatterns!=null && newFlavorSettings.identifyByChildFolderPatterns.size()>0) {
 			identifyByChildFolderPatterns = true;
-			List<Path> childFolders = getImmediateFilesOrFolers(folder, false);
+			List<Path> childFolders = getImmediateFilesOrFolders(folder, false);
+			outer:
 			for(String childFolderPattern:newFlavorSettings.identifyByChildFolderPatterns) {
 				Pattern pattern = getPattern(childFolderPattern);
 				
 				for(Path childFolder:childFolders) {
 					boolean matches = matches(childFolderPattern, pattern, childFolder);
-					if(matches) identifiedByChildFolderPatterns = true;
+					if(matches) {
+						identifiedByChildFolderPatterns = true;
+						break outer; //even one matches
+					}
 				}
 			}
 		}
@@ -118,27 +128,35 @@ public class RealFlavorService implements FlavorService {
 		if(newFlavorSettings.identifyBySiblingFolderPatterns!=null && newFlavorSettings.identifyBySiblingFolderPatterns.size()>0) {
 			identifyBySiblingFolderPatterns = true;
 			if(folder.getParent()!=null) {
-				List<Path> siblingFolders = getImmediateFilesOrFolers(folder.getParent(), false);
+				List<Path> siblingFolders = getImmediateFilesOrFolders(folder.getParent(), false);
+				outer:
 				for(String siblingFolderPattern:newFlavorSettings.identifyBySiblingFolderPatterns) {
 					Pattern pattern = getPattern(siblingFolderPattern);
 					
 					for(Path siblingFolder:siblingFolders) {
 						boolean matches = matches(siblingFolderPattern, pattern, siblingFolder);
-						if(matches) identifiedBySiblingFolderPatterns = true;
+						if(matches) {
+							identifiedBySiblingFolderPatterns = true;
+							break outer; //even one matches
+						}
 					}
 				}
-			} //Else?
+			} //Else? Not important to identify root folder by the sibling folders.
 		}		
 		//By child FILE patterns
 		if(newFlavorSettings.identifyByChildFilePatterns!=null && newFlavorSettings.identifyByChildFilePatterns.size()>0) {
 			identifyByChildFilePatterns = true;
-			List<Path> childFiles = getImmediateFilesOrFolers(folder, true);
+			List<Path> childFiles = getImmediateFilesOrFolders(folder, true);
+			outer:
 			for(String childFilePattern:newFlavorSettings.identifyByChildFilePatterns) {
 				Pattern pattern = getPattern(childFilePattern);
 				
 				for(Path childFile:childFiles) {
 					boolean matches = matches(childFilePattern, pattern, childFile);
-					if(matches) identifiedByChildFilePatterns = true;
+					if(matches) {
+						identifiedByChildFilePatterns = true;
+						break outer; //even one matches
+					}
 				}
 			}
 		}
@@ -146,13 +164,17 @@ public class RealFlavorService implements FlavorService {
 		if(newFlavorSettings.identifyBySiblingFilePatterns!=null && newFlavorSettings.identifyBySiblingFilePatterns.size()>0) {
 			identifyBySiblingFilePatterns = true;
 			if(folder.getParent()!=null) {
-				List<Path> siblingFiles = getImmediateFilesOrFolers(folder.getParent(), true);
+				List<Path> siblingFiles = getImmediateFilesOrFolders(folder.getParent(), true);
+				outer:
 				for(String siblingFilePattern:newFlavorSettings.identifyBySiblingFilePatterns) {
 					Pattern pattern = getPattern(siblingFilePattern);
 					
 					for(Path siblingFile:siblingFiles) {
 						boolean matches = matches(siblingFilePattern, pattern, siblingFile);
-						if(matches) identifiedBySiblingFilePatterns = true;
+						if(matches) {
+							identifiedBySiblingFilePatterns = true;
+							break outer; //even one matches
+						}
 					}
 				}
 			}//Else?
@@ -165,7 +187,7 @@ public class RealFlavorService implements FlavorService {
 		if(identifyByChildFilePatterns && !identifiedByChildFilePatterns) return false;
 		if(identifyBySiblingFilePatterns && !identifiedBySiblingFilePatterns) return false;
 
-		//Nothing to be checked, or whatever needs to be checked has been matched.
+		//Whatever needs to be checked has been matched, or Nothing to be checked
 		return true;
 	}
 	
@@ -204,7 +226,7 @@ public class RealFlavorService implements FlavorService {
 		return true;
 	}
 	
-	private List<Path> getImmediateFilesOrFolers(Path startAt, boolean files) throws IOException{
+	private List<Path> getImmediateFilesOrFolders(Path startAt, boolean files) throws IOException{
 	    try (Stream<Path> stream = Files.walk(startAt, 1)) {
 	    	
 	        return stream

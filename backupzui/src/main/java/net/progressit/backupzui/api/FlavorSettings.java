@@ -9,6 +9,7 @@ import lombok.Data;
 @Builder
 public class FlavorSettings {
 	public String flavorName;
+	public String flavorDescription;
 	
 	//Identity
 	public List<String> identifyBySelfFolderPatterns;

@@ -188,8 +188,8 @@ public class RunBackupPanel extends JPanel {
 		{
 			file = path;
 		    // prints file and directory paths
-		    System.out.println("Drive Name: "+path);
-		    System.out.println("Description: "+fsv.getSystemTypeDescription(path));
+			System.out.print("\nDrive Name: "+path);
+			System.out.print("\nDescription: "+fsv.getSystemTypeDescription(path));
 		    
 		    if(first) break;
 		}

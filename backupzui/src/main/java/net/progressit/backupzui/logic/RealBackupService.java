@@ -41,8 +41,8 @@ public class RealBackupService implements BackupService {
 		startNewBackupInner(source, source, destination, flavorOpt, isResync);
 	}
 	public void startNewBackupInner(Path originalRoot, Path source, Path destination, String flavorOpt, boolean isResync) throws IOException {
-		System.out.println("startNewBackup(source, destination, flavorOpt, isResync)");
-		System.out.println(Arrays.asList(source, destination, flavorOpt, isResync));
+		System.out.print("\nstartNewBackup(source, destination, flavorOpt, isResync)");
+		System.out.print("\n" + Arrays.asList(source, destination, flavorOpt, isResync));
 		
 		backupId = System.nanoTime();
 		

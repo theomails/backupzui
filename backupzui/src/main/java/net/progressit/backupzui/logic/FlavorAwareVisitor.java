@@ -27,25 +27,27 @@ public class FlavorAwareVisitor implements FileVisitor<Path> {
 		if(backupService.isStopped()) return FileVisitResult.SKIP_SUBTREE;
 		
 		if(dir.getParent()!=null && dir.getParent().equals(settings.getSourceBase())) {
-			System.out.println("preVisitDirectory " + dir);
+			System.out.print("\npreVisitDirectory " + dir);
 		}
 		
-		//System.out.println(flavor);
+		//System.out.print(flavor);
 		boolean allowed = flavorService.isFolderAllowed(settings.getFlavor(), dir);
 		if(!allowed) {
-			System.out.println(settings.getFlavor().flavorName + " has blocked " + dir);
+			System.out.print("\n" + settings.getFlavor().flavorName + " has blocked " + dir);
 			return FileVisitResult.SKIP_SUBTREE;
 		}
 		
 		Path relPath = settings.getSourceBase().relativize(dir);
 		Path matchingDest = settings.getDestinationBase().resolve(relPath);
 		
-		if(!dir.equals(settings.getSourceBase())) { //Don't check flavour again for root folder during the walk.
-			String newFlavor = flavorService.detectFlavor(dir, settings.getFlavor());
-			if(newFlavor!=null && !"generic".equals(newFlavor)) {
-				System.out.println("Found inner flavor " + newFlavor + ". Proceeding to a new backup...");
-				backupService.startNewBackupInner(settings.getOriginalRoot(), dir, matchingDest, newFlavor, settings.isResync());
-				return FileVisitResult.SKIP_SUBTREE;
+		if(!dir.equals(settings.getSourceBase())) { //Don't check flavour again for root folder during the (new backup?) walk.
+			if( settings.getFlavor().lookForFlavorsInside ) {
+				String newFlavor = flavorService.detectFlavor(dir, settings.getFlavor());
+				if(newFlavor!=null && !"generic".equals(newFlavor)) {
+					System.out.print("\nFound inner flavor " + newFlavor + ". Proceeding to a new backup...");
+					backupService.startNewBackupInner(settings.getOriginalRoot(), dir, matchingDest, newFlavor, settings.isResync());
+					return FileVisitResult.SKIP_SUBTREE;
+				}
 			}
 		}
 		
@@ -56,7 +58,7 @@ public class FlavorAwareVisitor implements FileVisitor<Path> {
 	@Override
 	public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 		if(backupService.isStopped()) return FileVisitResult.SKIP_SUBTREE;
-		//System.out.println("visitFile " + file);
+		//System.out.print("visitFile " + file);
 		
 		//Optimize.. If blacklist *, skip siblings
 		boolean allowed = flavorService.isFileAllowed(settings.getFlavor(), file);
@@ -68,13 +70,16 @@ public class FlavorAwareVisitor implements FileVisitor<Path> {
 			backupService.copyFile(file, matchingDestFile, relFile);
 			backupService.post( new BackupService.EventFileProcessed(false, false, file, matchingDestFile, relFile, false) );
 			//try { Thread.sleep(100); } catch(Exception e) {}
+		}else {
+			System.out.print("z");
+			//System.out.print(file.toString());
 		}
 		return FileVisitResult.CONTINUE;
 	}
 
 	@Override
 	public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-		System.out.println("visitFileFailed " + file);
+		System.out.print("\nvisitFileFailed " + file);
 		
 		if (exc instanceof FileSystemLoopException) {
 	        System.err.println("Cycle detected: " + file);
@@ -88,7 +93,7 @@ public class FlavorAwareVisitor implements FileVisitor<Path> {
 
 	@Override
 	public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-		//System.out.println("postVisitDirectory " + dir);
+		//System.out.print("postVisitDirectory " + dir);
 		
 		backupService.post( new BackupService.EventFolderProcessed(settings.getOriginalRoot(), settings.getSourceBase(), settings.getFlavor().flavorName, false, false, dir, null, null) );
 		return FileVisitResult.CONTINUE;

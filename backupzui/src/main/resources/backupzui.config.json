@@ -1,19 +1,18 @@
 {
-  "version": 0.1,
-  "versionDate": "07-03-2021",
+  "version": 0.2,
+  "versionDate": "16-01-2022",
   "settings": [
     {
       "flavorName": "fake-pc",
+      "flavorDescription": "fake-pc backupzui test folder: copy as-is",
       "identifyBySelfFolderPatterns": [
         "FAKEPC"
-      ],
-      "blacklistFolderPatterns": [
-        ".*"
       ],
       "lookForFlavorsInside": false
     },
     {
       "flavorName": "ssd-clone",
+      "flavorDescription": "ssd-clone: Dont copy.. already its a backup of backup",
       "identifyBySelfFolderPatterns": [
         "SSD-CLONE"
       ],
@@ -23,9 +22,9 @@
       "lookForFlavorsInside": false
     },
     {
-      "flavorName": "ssd-to-dell",
+      "flavorName": "package-repos",
       "identifyBySelfFolderPatterns": [
-        "Zoho Dell Ubuntu 2021"
+        "\\.m2", "\\.gradle","node_modules"
       ],
       "blacklistFolderPatterns": [
         ".*"
@@ -33,29 +32,9 @@
       "lookForFlavorsInside": false
     },
     {
-      "flavorName": "maven-m2",
+      "flavorName": "code-repo",
       "identifyBySelfFolderPatterns": [
-        "\\.m2"
-      ],
-      "blacklistFolderPatterns": [
-        ".*"
-      ],
-      "lookForFlavorsInside": false
-    },
-    {
-      "flavorName": "git",
-      "identifyBySelfFolderPatterns": [
-        "\\.git"
-      ],
-      "blacklistFolderPatterns": [
-        ".*"
-      ],
-      "lookForFlavorsInside": false
-    },
-    {
-      "flavorName": "hg",
-      "identifyBySelfFolderPatterns": [
-        "\\.hg"
+        "\\.hg", "\\.git"
       ],
       "blacklistFolderPatterns": [
         ".*"
@@ -70,6 +49,9 @@
       "blacklistFolderPatterns": [
         ".*"
       ],
+      "blacklistFilePatterns": [
+        ".*"
+      ],
       "lookForFlavorsInside": false
     },
     {
@@ -77,6 +59,7 @@
       "identifyBySelfFolderPatterns": [
         "bin",
         "boot",
+        "cores",
         "dev",
         "etc",
         "lib",
@@ -86,6 +69,7 @@
         "media",
         "mnt",
         "opt",
+        "private",
         "proc",
         "root",
         "run",
@@ -94,10 +78,22 @@
         "srv",
         "sys",
         "usr",
+        "var",
         "tmp"
       ],
-      "identifyByParentFolderPatterns": [
-        "/"
+      "blacklistFolderPatterns": [
+        ".*"
+      ],
+      "blacklistFilePatterns": [
+        ".*"
+      ],
+      "lookForFlavorsInside": false
+    },
+    {
+      "flavorName": "trash-recyclebin",
+      "flavorDescription": "All trashes and recycle bins",
+      "identifyBySelfFolderPatterns": [
+        "\\.Trash(.*)", "$RECYCLE.BIN"
       ],
       "blacklistFolderPatterns": [
         ".*"
@@ -108,67 +104,9 @@
       "lookForFlavorsInside": false
     },
     {
-      "flavorName": "videos-cache-clips",
+      "flavorName": "windows-system",
       "identifyBySelfFolderPatterns": [
-        "CacheClip"
-      ],	
-	      "identifyByParentFolderPatterns": [
-        "Videos"
-      ],
-      "blacklistFolderPatterns": [
-        ".*"
-      ],
-      "blacklistFilePatterns": [
-        ".*"
-      ],
-      "lookForFlavorsInside": false
-    },
-    {
-      "flavorName": "unix-trash",
-      "identifyBySelfFolderPatterns": [
-        "\\.Trash(.*)"
-      ],
-      "blacklistFolderPatterns": [
-        ".*"
-      ],
-      "lookForFlavorsInside": false
-    },
-    {
-      "flavorName": "sys-vol-info",
-      "identifyBySelfFolderPatterns": [
-        "System Volume Information"
-      ],
-      "blacklistFolderPatterns": [
-        ".*"
-      ],
-      "lookForFlavorsInside": false
-    },
-    {
-      "flavorName": "win-recyclebin",
-      "identifyBySelfFolderPatterns": [
-        "$RECYCLE.BIN"
-      ],
-      "blacklistFolderPatterns": [
-        ".*"
-      ],
-      "lookForFlavorsInside": false
-    },
-    {
-      "flavorName": "app-data",
-      "identifyBySelfFolderPatterns": [
-        "AppData"
-      ],
-      "blacklistFolderPatterns": [
-        "Local",
-        "LocalLow",
-        "Roaming"
-      ],
-      "lookForFlavorsInside": false
-    },
-    {
-      "flavorName": "program-data",
-      "identifyBySelfFolderPatterns": [
-        "ProgramData"
+        "System Volume Information", "ProgramData","AppData"
       ],
       "blacklistFolderPatterns": [
         ".*"
@@ -195,44 +133,10 @@
       "lookForFlavorsInside": false
     },
     {
-      "flavorName": "zide-project",
-      "identifyByChildFolderPatterns": [
-        "\\.zide_resources"
-      ],
-      "blacklistFolderPatterns": [
-        "\\.zide_resources",
-        "build"
-      ],
-      "lookForFlavorsInside": true
-    },
-    {
-      "flavorName": "eclipse-project",
-      "identifyBySiblingFolderPatterns": [
-        "\\.metadata"
-      ],
-      "blacklistFolderPatterns": [
-        "\\.metadata",
-        "target"
-      ],
-      "lookForFlavorsInside": true
-    },
-    {
-      "flavorName": "vue-folder",
-      "identifyByParentFolderPatterns": [
-        "VUE",
-        "vue"
-      ],
-      "blacklistFolderPatterns": [
-        "node_modules",
-        "\\.git",
-        "dist"
-      ],
-      "lookForFlavorsInside": true
-    },
-    {
-      "flavorName": "node-modules",
+      "flavorName": "code-build",
+      "flavorDescription": "build of code",
       "identifyBySelfFolderPatterns": [
-        "node_modules"
+        "build", "target", "dist"
       ],
       "blacklistFolderPatterns": [
         ".*"
@@ -243,9 +147,26 @@
       "lookForFlavorsInside": false
     },
     {
-      "flavorName": "tomcat-dir",
-      "identifyBySelfFolderPatterns": [
-        "apache-tomcat.*"
+      "flavorName": "ide-meta",
+      "identifyByChildFolderPatterns": [
+        "\\.zide_resources", "\\.metadata"
+      ],
+      "blacklistFolderPatterns": [
+        "\\.zide_resources",
+        "\\.metadata",
+        "build"
+      ],
+      "lookForFlavorsInside": true
+    },
+    {
+      "flavorName": "executable-application",
+      "identifyByChildFolderPatterns": [
+        "bin",
+        "dll",
+        "BIN",
+        "x86",
+        "x64",
+        "jre"
       ],
       "blacklistFolderPatterns": [
         ".*"
@@ -253,7 +174,22 @@
       "blacklistFilePatterns": [
         ".*"
       ],
-      "lookForFlavorsInside": true
+      "lookForFlavorsInside": false
+    },
+    {
+      "flavorName": "hardware-drivers",
+      "identifyByChildFolderPatterns": [
+        "Chipset",
+        "CHIPSET",
+        "chipset"
+      ],
+      "blacklistFolderPatterns": [
+        ".*"
+      ],
+      "blacklistFilePatterns": [
+        ".*"
+      ],
+      "lookForFlavorsInside": false
     },
     {
       "flavorName": "known-drive-programs",
@@ -276,16 +212,6 @@
         ".*"
       ],
       "lookForFlavorsInside": false
-    },
-    {
-      "flavorName": "user-dir",
-      "identifyByParentFolderPatterns": [
-        "Users"
-      ],
-      "blacklistFolderPatterns": [
-        "(\\.).*"
-      ],
-      "lookForFlavorsInside": true
     },
     {
       "flavorName": "program-files",
@@ -316,12 +242,31 @@
       "lookForFlavorsInside": false
     },
     {
+      "flavorName": "PNR",
+      "identifyBySelfFolderPatterns": [
+        "PNR"
+      ],
+      "blacklistFolderPatterns": [
+        ".*"
+      ],
+      "blacklistFilePatterns": [
+        ".*"
+      ],
+      "lookForFlavorsInside": false
+    },
+    {
       "flavorName": "generic",
       "identifyBySelfFolderPatterns": [
         ".*"
       ],
       "blacklistFolderPatterns": [
-        "\\$.*"
+      ],
+      "blacklistFilePatterns": [
+        ".*?\\.msi",
+        ".*?\\.dmg",
+        ".*?\\.exe",
+        ".*?\\.com",
+        ".*?\\.dll"
       ],
       "lookForFlavorsInside": true
     }
