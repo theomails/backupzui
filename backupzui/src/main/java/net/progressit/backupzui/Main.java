@@ -23,5 +23,10 @@ public class Main {
 		mw.setVisible(true);	
 	}
 	
+	//Needed for other applications to embed this project.
+	public static Injector getBackupzInjector() {
+		Injector injector = Guice.createInjector(new LiveModule());
+		return injector;
+	}	
 
 }
