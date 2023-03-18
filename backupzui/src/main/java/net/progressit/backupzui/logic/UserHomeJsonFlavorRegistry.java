@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -20,7 +21,6 @@ import net.progressit.backupzui.api.FlavorSettings;
 public class UserHomeJsonFlavorRegistry {
 	
 	public static class UserHomeJsonFlavorConfig{
-		private float version;
 		private String versionDate;
 		private List<FlavorSettings> settings;
 	}
@@ -76,11 +76,6 @@ public class UserHomeJsonFlavorRegistry {
 
 	public void saveSettings(List<FlavorSettings> settings) {
 		UserHomeJsonFlavorConfig newConfig = new UserHomeJsonFlavorConfig();
-		if(config==null) {
-			newConfig.version = 0.1f;
-		}else {
-			newConfig.version = config.version + 0.1f;
-		}
 		newConfig.versionDate = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
 		newConfig.settings = settings;
 		
@@ -103,11 +98,11 @@ public class UserHomeJsonFlavorRegistry {
 		return userHomeJsonFlavorConfig;
 	}
 	
-	public float getVersion() {
-		return config==null?0:config.version;
-	}
-
-	public String getVersionDate() {
-		return config==null?"-":config.versionDate;
+	public Date getVersionDate() {
+		try {
+			return config==null?null:new SimpleDateFormat("dd-MM-yyyy").parse(config.versionDate);
+		} catch (ParseException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }
